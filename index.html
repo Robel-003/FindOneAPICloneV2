@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA_Compatible" content="ie=edge">
+    <title>AirBnb Search Page</title>   
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <h1>Database Search</h1>
+    </header>
+    <main>
+        <form>
+            <br>
+            <label for="Database">Database:</label>
+            <select name="Database" id="Database">
+                <!-- database to select 
+                ex: database: airbnb
+                ex: database: mflix
+                ex: database: restaurants
+                ex: database: training
+            -->
+                <option value="sample_mflix">Sample_Mflix</option>
+                <option value="sample_restaurants">Sample_Restaurants</option>
+                <option value="sample_training">Sample_Training</option>
+            </select>
+            
+            <br>
+            <label for="Collection">Collection:</label>
+            <select name="Collection" id="Collection">
+            <!-- depending on which database is selected, 
+            the collection should show the collections for a given database
+                ex: database: airbnb, collection: listingAndReviews      
+                ex: database: mflix, collection: movies
+                ex: database: restaurants, collection: restaurants      
+                ex: database: training, collection: companies  
+            -->
+                <option value="movies">Movies</option>
+                <option value="restaurants">Restaurant</option>
+                <option value="companies">Companies</option>
+            </select>
+
+            <br>
+            <label for="Filter">Filter:</label>
+            <select name="Filter" id="Filter">
+            <!-- the filter would the specification for a given collection inside a database
+                ex: database: airbnb, collection: listingAndReviews, filter: property_type: Apartment      
+                ex: database: mflix, collection: movies, filter: title: Training Day      
+                ex: database: restaurants, collection: restaurants, filter: cuisine: Italian
+                ex: database: training, collection: companies, filter: name: Facebook      
+            -->
+                <option value="title">Title</option>
+                <option value="cuisine">Cuisine</option>
+                <option value="name">Name</option>
+            </select>
+            <br>
+            <input id="title" placeholder="Enter..." type="text">
+        </form>
+        <button id="Button" onclick="fetchListings()">Search</button>
+        <div id="databaseListing">
+            <h4><ul id="listing"></ul></h4>
+        </div>
+    </main>
+
+    <script>
+    async function fetchListings() {
+
+        const database = document.getElementById("Database").value;
+        const collection = document.getElementById("Collection").value;
+        const filter = document.getElementById("Filter").value;
+        const title = document.getElementById("title").value;
+
+        const url = 'http://localhost:3000/findOne';
+        const data = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                collection: collection,
+                database: database,
+                dataSource: "Cluster0",
+                filter: {[filter]: title},
+            })
+        }
+
+        const response = await fetch(url, data);
+        const jsonResponse = await response.json();
+        const jsonResult = jsonResponse.data;
+        console.log(database);
+        console.log(jsonResult);
+
+        const result = document.getElementById("listing");
+        result.innerHTML = "";
+        const list = document.createElement("p");
+        
+        if (database === "sample_mflix" && collection === "movies" && filter === "title") {
+            list.innerHTML = 
+            `<p>Movie Title: ${jsonResult.title} </p>
+            <p>Director(s): ${jsonResult.directors}</p>
+            <p>Genre(s): ${jsonResult.genres}</p>
+            <p>Cast: ${jsonResult.cast}</p>
+            <p>Plot: ${jsonResult.plot}</p>`;
+        } else if (database === "sample_restaurants"  && collection === "restaurants" && filter === "cuisine") {
+            list.innerHTML = 
+            `<p>Name: ${jsonResult.name}</p>
+            <p>Location: ${jsonResult.borough} </p>
+            <p>Cuisine: ${jsonResult.cuisine}</p>`;            
+        } else if (database === "sample_training"  && collection === "companies" && filter === "name") {
+            list.innerHTML = 
+            `<p>Name: ${jsonResult.name} </p>
+            <p>Homepage_url: ${jsonResult.homepage_url}</p>
+            <p>Category: ${jsonResult.category_code}</p>
+            <p>Founder Year: ${jsonResult.founded_year}</p>`;
+        }       
+        
+        result.appendChild(list);
+    }
+
+    </script>
+</body>
+</html>
